@@ -864,13 +864,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   yawPivot: {fileID: 326731512}
   moveDistance: 5
-  moveDuration: 2
-  turnDuration: 2
+  moveDuration: 3
+  turnDuration: 3
   waitDuration: 2
   instrDuration: 1
   MIDuration: 2
   stopDuration: 1
-  nSamples: 60
+  nSamplesSession: 30
+  nSessions: 2
+  menuSceneName: Menu
   audioSource: {fileID: 1503947387}
   Beep: {fileID: 1586150272}
   BeepEnd: {fileID: 217779184}
@@ -4508,6 +4510,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 326731512}
     m_Modifications:
+    - target: {fileID: 657184242161839408, guid: d6878e1999eb4b44a9f5a263af86c185, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.69
+      objectReference: {fileID: 0}
     - target: {fileID: 2218496723442559053, guid: d6878e1999eb4b44a9f5a263af86c185, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

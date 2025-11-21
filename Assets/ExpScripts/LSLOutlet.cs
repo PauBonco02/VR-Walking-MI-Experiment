@@ -53,7 +53,7 @@ public class LSLOutlet : MonoBehaviour
         Debug.Log("LSL Marker Sent: " + marker);
     }
 
-    // It's good practice to close the stream when the application quits.
+    // Close the stream when the application quits.
     private void OnApplicationQuit()
     {
         if (outlet != null)

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Oculus.Interaction.PoseDetection;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 
 public class GridMovement : MonoBehaviour
@@ -20,8 +21,12 @@ public class GridMovement : MonoBehaviour
 
     [HideInInspector] public float stopDuration = 1f;
 
-    [Header("Samples")]
-    public int nSamples = 10; // samples for each command 
+    [Header("Session Management")]
+    public int nSamplesSession = 30;
+    public int nSessions = 2;
+    public string menuSceneName = "Menu";
+
+    private static int currentSession = 1;
 
     [Header("Audios")]
     public AudioSource audioSource;
@@ -44,7 +49,7 @@ public class GridMovement : MonoBehaviour
         moveDistance = 10f;
 
         // Generate an L/R sequence up front
-        sequence = GenerateSequence(nSamples);
+        sequence = GenerateSequence(nSamplesSession);
 
         // Begin a step-by-step spawn + move + turn sequence
         StartCoroutine(MoveTurnSequence());
@@ -52,16 +57,17 @@ public class GridMovement : MonoBehaviour
 
     private IEnumerator MoveTurnSequence()
     {
-        // For however many chunks you want:
+        
         yield return new WaitForSeconds(waitDuration);
 
-        int perc25 = nSamples * 3 * 1/4;
-        int perc50 = nSamples * 3 * 1/2;
-        int perc75 = nSamples * 3 * 3/4;
+        int perc25 = nSamplesSession * 3 * 1/4;
+        int perc50 = nSamplesSession * 3 * 1/2;
+        int perc75 = nSamplesSession * 3 * 3/4;
 
         for (int i = 0; i < sequence.Count; i++)
         {
 
+            // Stand before any action
             state = "S";
             if (LSLOutlet.Instance != null) { LSLOutlet.Instance.PushMarker(state); }
             yield return new WaitForSeconds(waitDuration);
@@ -105,8 +111,10 @@ public class GridMovement : MonoBehaviour
                 yield return StartCoroutine(TurnRight(90f, turnDuration));
             }
 
+            // Play the ending beep
             BeepEnd.Play();
 
+            // Percentage Announcements (25, 50 and 75% of samples)
             if (i == perc25-1)
             {
                 yield return new WaitForSeconds(0.5f);
@@ -136,13 +144,28 @@ public class GridMovement : MonoBehaviour
         audioSource.clip = audiocomplete;
         audioSource.Play();
         Debug.Log("Session Complete");
+
+        yield return new WaitForSeconds(audiocomplete.length);
+
+        if (currentSession < nSessions)
+        {
+            currentSession++;
+            Debug.Log($"Session complete. Loading menu for session {currentSession}.");
+            SceneManager.LoadScene(0);
+        }
+        else
+        {
+            Debug.Log("All sessions complete. Experiment finished. Returning to menu.");
+            currentSession = 1;
+            SceneManager.LoadScene(0);
+        }
     }
+
 
     private IEnumerator MoveForward(float distance, float duration)
     {
         // Record initial and target positions
         Vector3 startPos = yawPivot.position;
-        //Vector3 endPos = transform.position + transform.forward * distance;
 
         // Combine yawJoint rotation and camera yaw
         Vector3 moveDir = Quaternion.Euler(0, yawPivot.eulerAngles.y, 0) * Vector3.forward;
@@ -186,7 +209,7 @@ public class GridMovement : MonoBehaviour
 
     private List<char> GenerateSequence(int count)
     {
-        // We'll generate a sequence of length 4*count,
+        // We generate a sequence of length 4*count,
         // containing exactly `count` 'S', `count` 'F', `count` 'L' and `count` 'R',
         // ensuring no more than 2 identical letters in a row.
 
